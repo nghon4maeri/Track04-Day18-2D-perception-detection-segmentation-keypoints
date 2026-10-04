@@ -1,0 +1,73 @@
+{
+  "progress": {
+    "box_iou": "ok",
+    "nms": "ok",
+    "batched_nms": "ok",
+    "mask_iou": "ok",
+    "polygon_to_mask": "ok",
+    "mask_to_yolo_seg": "ok",
+    "autolabel": "ok",
+    "oks": "ok",
+    "joint_angle": "ok",
+    "FLIP_IDX": "ok"
+  },
+  "latency": [
+    {
+      "Cấu hình": "one-to-many + NMS, conf 0.25",
+      "preprocess (ms)": 2.44,
+      "inference (ms)": 20.91,
+      "postprocess (ms)": 2.55,
+      "số box": 5
+    },
+    {
+      "Cấu hình": "one-to-many + NMS, conf 0.001",
+      "preprocess (ms)": 2.22,
+      "inference (ms)": 18.26,
+      "postprocess (ms)": 2.68,
+      "số box": 203
+    },
+    {
+      "Cấu hình": "one-to-one NMS-free, conf 0.25",
+      "preprocess (ms)": 2.48,
+      "inference (ms)": 18.48,
+      "postprocess (ms)": 0.86,
+      "số box": 5
+    },
+    {
+      "Cấu hình": "one-to-one NMS-free, conf 0.001",
+      "preprocess (ms)": 2.96,
+      "inference (ms)": 19.43,
+      "postprocess (ms)": 1.0,
+      "số box": 203
+    }
+  ],
+  "result_4b": {
+    "flip_idx": "giải phẫu",
+    "epochs": 40,
+    "imgsz": 640,
+    "Box mAP50-95": 0.911245283018868,
+    "Pose mAP50": 0.995,
+    "Pose mAP50-95": 0.406286546020457,
+    "train (phút)": 4.5
+  },
+  "result_4c": null,
+  "answers": {
+    "Q1": "Faster R-CNN in ra danh sách các tensor gồm boxes, labels, và scores. YOLO26n in ra tensor dạng (1, 84, 8400) đối với ảnh vuông 640x640 và (1, 84, 6300) đối với ảnh chữ nhật bus.jpg.",
+    "Q2": "Thuật toán NMS tự cài đặt giữ lại 5 box, hoàn toàn khớp với kết quả NMS của mô hình Ultralytics (cũng giữ lại 5 box). Dựa theo số lượng box, camera đếm được 4 người và 1 chiếc xe buýt.",
+    "Q3": "Pipeline dùng kiến trúc head One-to-one có độ trễ (latency) thấp hơn so với kiến trúc One-to-many + NMS vì nó loại bỏ hoàn toàn việc phải chạy thuật toán hậu xử lý NMS trên CPU.",
+    "Q4": "Bản đồ semantic phân loại toàn bộ pixel người thành khối liền (class person), nên khi có 4 người bị phân tách hoặc che khuất sẽ tạo ra 7 vùng liên thông. Pixel xe buýt phần lớn bị gán nhãn sai thành train do xe buýt và tàu hỏa khá giống nhau và giới hạn của bộ dữ liệu học.",
+    "Q5": "Mask IoU giữa các dự đoán của YOLO26n-seg và Mask R-CNN dao động từ khoảng 0.84 đến 0.94. YOLO-seg vẫn giữ được sự cân bằng rất tốt giữa tốc độ xử lý nhanh và độ chính xác của mask.",
+    "Q6": "Điểm A nằm ngay giữa thân người nên mô hình SAM sinh ra mask bao phủ toàn bộ người (IoU ≈ 0.99). Điểm B nằm ở rìa nền nên chỉ sinh ra một mảnh mask cực nhỏ (IoU ≈ 0.00).",
+    "Q7": "Keypoint R-CNN ra (2, 17, 3), YOLO26n-pose ra (2, 17, 2). Khi bỏ ngưỡng (Threshold = -100), Keypoint R-CNN tiếp tục dự đoán đầu gối/mắt cá chân bên ngoài rìa ảnh vì mô hình đã học cấu trúc hình học của giải phẫu người nên tự suy luận ra các khớp bị khuất.",
+    "Q8": "Khi lệch 8 px, điểm OKS ở vùng mắt bị sụt giảm mạnh (chỉ còn khoảng 0.53) trong khi vùng hông gần như không đổi (khoảng 0.97). Vì hệ số sai số cho phép (sigma 'k') của hông (0.107) lớn hơn rất nhiều so với mắt (0.025).",
+    "Q9": "Ở ảnh gốc, góc lệch tự nhiên khoảng 1 độ. Khi xoay ảnh 90 độ, góc lệch tính được lên mức 83–94 độ, hệ thống cảnh báo NGÃ. Mô hình chỉ bắt được 3 người do tư thế nằm ngang không có nhiều trong tập huấn luyện COCO.",
+    "Q10": "Mọi con hổ trong tập train (210) và val (53) đều quay sang phải. Nếu lật ngang ảnh mà không tráo đổi chỉ số (FLIP_IDX), mô hình sẽ học sai nhãn chân trái/phải do nhãn bị giữ nguyên trong khi hình ảnh lật ngược lại.",
+    "Q11": "Lỗi phổ biến: (1) Nhầm lẫn chân trái/chân phải vì hình dạng chân hổ rất giống nhau và thường vắt chéo. (2) Bỏ sót keypoints khi chân bị che lấp bởi cỏ hoặc khuất. Khắc phục: Data augmentation cắt cúp/xoay mạnh hơn và gán lại OKS sigmas phù hợp với cấu trúc động vật 4 chân.",
+    "Q12": "Metric mAP@[.5:.95] đánh giá toàn diện hơn mAP50 vì bài toán Keypoints yêu cầu độ chính xác toạ độ pixel rất khắt khe. mAP50 dễ dàng cho điểm cao chỉ cần bbox trúng, nhưng che đi lỗi xác định lệch từng khớp nối."
+  },
+  "env": {
+    "device": "cuda",
+    "torch": "2.6.0+cu124",
+    "ultralytics": "8.4.171"
+  }
+}
