@@ -1,0 +1,17 @@
+def box_iou(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
+    """a: (N,4), b: (M,4), định dạng xyxy → ma trận IoU (N,M)."""
+    # Bước 1 — diện tích từng box = (x2 − x1) · (y2 − y1)
+    area_a = (a[:, 2] - a[:, 0]) * (a[:, 3] - a[:, 1])            # (N,)
+    area_b = ...                                                  # (M,)   🧩
+    # Bước 2 — hình chữ nhật giao: góc trên-trái lấy max, góc dưới-phải lấy min.
+    #          a[:, None, :2] có shape (N,1,2), b[None, :, :2] có shape (1,M,2) → broadcast thành (N,M,2)
+    lt = torch.max(a[:, None, :2], b[None, :, :2])                # (N,M,2)
+    rb = ...                                                      # (N,M,2) 🧩
+    # Bước 3 — (rộng, cao) của phần giao. Hai box không chạm nhau thì phải ra 0, không được âm.
+    wh = ...                                                      # (N,M,2) 🧩
+    inter = wh[..., 0] * wh[..., 1]                               # (N,M)
+    # Bước 4 — IoU = giao / hợp, với hợp = |A| + |B| − giao
+    return inter / union
+
+
+check_box_iou()
